@@ -16,12 +16,21 @@ class DraggableWindow {
         this.onMouseDown = this.onMouseDown.bind(this);
         this.onMouseMove = this.onMouseMove.bind(this);
         this.onMouseUp = this.onMouseUp.bind(this);
+        this.onCloseClick = this.onCloseClick.bind(this);
+        this.onMaximaseClick = this.onMaximaseClick.bind(this);
+
 
         this.el.addEventListener('mousedown', this.onMouseDown);
         document.addEventListener('mousemove', this.onMouseMove);
         document.addEventListener('mouseup', this.onMouseUp);
 
         document.body.style.overflow = 'hidden';
+
+        this.closeBtn = this.el.querySelector('.btn.close');
+        this.closeBtn.addEventListener('click', this.onCloseClick);
+
+        this.resisebtn = this.el.querySelector('.maximase');
+        this.resisebtn.addEventListener('click', this.onMaximaseClick);
     }
 
     onMouseDown(e) {
@@ -60,6 +69,46 @@ class DraggableWindow {
         this.el.style.cursor = 'grab';
 
         console.log(`Координати вікна: left=${this.el.style.left}, top=${this.el.style.top}`);
+    }
+
+    onCloseClick(e) {
+        e.preventDefault();
+        this.destroy();
+    }
+
+    onMaximaseClick() {
+        console.log("Maximase clicked");
+        
+        this.el.style.width = '100%';
+        this.el.style.height = '100%';
+        this.el.style.left = 0 + 'px';
+        this.el.style.top = 0 + 'px';
+
+        this.resisebtn.removeEventListener('click', this.onMaximaseClick);
+        this.resisebtn.addEventListener('click', this.onMinimaseClick.bind(this));
+    }
+
+    onMinimaseClick() {
+        console.log("Minimase clicked");
+        
+        this.el.style.width = 200 + 'px';
+        this.el.style.height = 200 + 'px';
+        this.el.style.left = (maxRight_pos - this.el.offsetWidth)/2 + 'px';
+        this.el.style.top = ((maxBottom_pos - this.el.offsetHeight)/2)-60 + 'px';
+
+        this.resisebtn.removeEventListener('click', this.onMaximaseClick);
+        this.resisebtn.addEventListener('click', this.onMaximaseClick.bind(this));
+    }
+
+    destroy() {
+        console.log('Destroying window:', this.el);
+        
+        this.el.removeEventListener('mousedown', this.onMouseDown);
+        document.removeEventListener('mousemove', this.onMouseMove);
+        document.removeEventListener('mouseup', this.onMouseUp);
+
+        this.closeBtn.removeEventListener('click', this.onCloseClick);
+        this.el.parentNode.removeChild(this.el);
     }
 }
 
@@ -101,7 +150,7 @@ function createWin(
             <div class="win-name">${name}</div>
             <div class="win-btns">
                 <div class="btn minimize"></div>
-                <div class="btn big-smal"></div>
+                <div class="btn maximase"></div>
                 <div class="btn close">${content}</div>
             </div>
         </div>
