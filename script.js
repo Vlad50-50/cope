@@ -33,6 +33,7 @@ class DraggableWindow {
 
         zIndex_count++;
         this.el.style.zIndex = zIndex_count;
+        console.log("Z-index:" + zIndex_count);
     }
 
     onMouseMove(e) {
@@ -76,4 +77,39 @@ function initWin(selector) {
     });
 }
 
-initWin('.draggable-window');
+function createWin(
+                    name = 'Base',
+                    content = '',
+                    size = { width: 200, height: 200 },
+                    position = { 
+                        left: ((maxRight_pos - size.width)/2),
+                        top: (((maxBottom_pos - size.height)/2)-60) 
+                    }) {
+
+    const newWindow = document.createElement('div');
+
+    newWindow.classList.add('draggable-window');
+    newWindow.style.width = size.width + 'px';
+    newWindow.style.height = size.height + 'px';
+    newWindow.style.left = position.left + 'px';
+    newWindow.style.top = position.top + 'px';
+    newWindow.style.background = '#ffffff';
+    newWindow.style.position = 'absolute';
+    newWindow.style.cursor = 'grab';
+    newWindow.innerHTML = `
+        <div class="win-blocks">
+            <div class="win-name">${name}</div>
+            <div class="win-btns">
+                <div class="btn minimize"></div>
+                <div class="btn big-smal"></div>
+                <div class="btn close">${content}</div>
+            </div>
+        </div>
+        <div class="content"></div>
+    `;
+    document.body.appendChild(newWindow);
+
+    initWin('.draggable-window');
+}
+
+createWin();

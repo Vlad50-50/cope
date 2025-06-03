@@ -1,0 +1,57 @@
+.draggable-window {
+    background:#e0e0e0;
+    border-radius: 10px 10px 4px 4px;
+    box-shadow:
+    inset 0 3em 3em rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgb(255, 255, 255),
+    0.3em 0.3em 1em rgba(0, 0, 0, 0.1);
+}
+
+.win-blocks {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px;
+
+    font-weight: 600;
+    user-select: none;
+}
+
+.win-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn {
+    height: 20px;
+    width: 20px;
+    border-radius: 100%;
+    cursor: pointer;
+}
+
+.close {
+    background: #ff4d4d;
+    &:hover {
+        background: #fc7c7c;
+    }
+}
+.minimize {
+    background: #ffcc00;
+    &:hover {
+        background: #ffdb4d;
+    }
+}
+
+.big-smal {
+    background: #5a665a;
+    &:hover {
+        background: #7a8a7a;
+    }
+}
+
+.win-btns {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
