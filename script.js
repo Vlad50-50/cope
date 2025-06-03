@@ -1,3 +1,10 @@
+const maxLeft_pos = window.scrollX;
+const maxTop_pos = window.scrollY;
+const maxRight_pos = window.scrollX + window.innerWidth;
+const maxBottom_pos = window.scrollY + window.innerHeight;
+
+let zIndex_count = 200;
+
 class DraggableWindow {
     constructor(element) {
         this.el = element;
@@ -23,6 +30,9 @@ class DraggableWindow {
         this.offsetX = e.clientX - rect.left;
         this.offsetY = e.clientY - rect.top;
         this.el.style.cursor = 'grabbing';
+
+        zIndex_count++;
+        this.el.style.zIndex = zIndex_count;
     }
 
     onMouseMove(e) {
@@ -31,18 +41,13 @@ class DraggableWindow {
         let newLeft = e.clientX - this.offsetX;
         let newTop = e.clientY - this.offsetY;
 
-        const viewportLeft = window.scrollX;
-        const viewportTop = window.scrollY;
-        const viewportRight = window.scrollX + window.innerWidth;
-        const viewportBottom = window.scrollY + window.innerHeight;
-
         const elWidth = this.el.offsetWidth;
         const elHeight = this.el.offsetHeight;
 
-        if (newLeft < viewportLeft) newLeft = viewportLeft;
-        if (newLeft + elWidth > viewportRight) newLeft = viewportRight - elWidth;
-        if (newTop < viewportTop) newTop = viewportTop;
-        if (newTop + elHeight > viewportBottom) newTop = viewportBottom - elHeight;
+        if (newLeft < maxLeft_pos) newLeft = maxLeft_pos;
+        if (newLeft + elWidth > maxRight_pos) newLeft = maxRight_pos - elWidth;
+        if (newTop < maxTop_pos) newTop = maxTop_pos;
+        if (newTop + elHeight > maxBottom_pos) newTop = (maxBottom_pos - elHeight);
 
         this.el.style.left = newLeft + 'px';
         this.el.style.top = newTop + 'px';
@@ -52,13 +57,8 @@ class DraggableWindow {
         if (!this.isDragging) return;
         this.isDragging = false;
         this.el.style.cursor = 'grab';
-        console.log(`Координати вікна: left=${this.el.style.left}, top=${this.el.style.top}`);
-    }
 
-    destroy() {
-        this.el.removeEventListener('mousedown', this.onMouseDown);
-        document.removeEventListener('mousemove', this.onMouseMove);
-        document.removeEventListener('mouseup', this.onMouseUp);
+        console.log(`Координати вікна: left=${this.el.style.left}, top=${this.el.style.top}`);
     }
 }
 
@@ -67,7 +67,7 @@ function initWin(selector) {
     let draggableInstances = [];
 
     console.log(allWindows);
-    
+
 
     allWindows.forEach(el => {
         console.log(el);
