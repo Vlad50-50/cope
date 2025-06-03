@@ -1,62 +1,79 @@
-const topEdge = window.scrollY;
-const bottomEdge = window.scrollY + window.innerHeight;
-const leftEdge = window.scrollX;
-const rightEdge = window.scrollX + window.innerWidth;
+class DraggableWindow {
+    constructor(element) {
+        this.el = element;
 
-const okno = document.getElementById('window');
+        this.isDragging = false;
+        this.offsetX = 0;
+        this.offsetY = 0;
 
-document.body.style.overflow = 'hidden';
+        this.onMouseDown = this.onMouseDown.bind(this);
+        this.onMouseMove = this.onMouseMove.bind(this);
+        this.onMouseUp = this.onMouseUp.bind(this);
 
-let offsetX = 0;
-let offsetY = 0;
-let isDragging = false;
+        this.el.addEventListener('mousedown', this.onMouseDown);
+        document.addEventListener('mousemove', this.onMouseMove);
+        document.addEventListener('mouseup', this.onMouseUp);
 
-okno.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    offsetX = e.clientX - okno.offsetLeft;
-    offsetY = e.clientY - okno.offsetTop;
-    okno.style.cursor = 'grabbing';
-});
-
-okno.addEventListener('mousemove', (e) => {
-    if (isDragging) {      
-        okno.style.left = (e.clientX - offsetX) + 'px';
-        okno.style.top = (e.clientY - offsetY) + 'px';
+        document.body.style.overflow = 'hidden';
     }
-});
 
+    onMouseDown(e) {
+        this.isDragging = true;
+        const rect = this.el.getBoundingClientRect();
+        this.offsetX = e.clientX - rect.left;
+        this.offsetY = e.clientY - rect.top;
+        this.el.style.cursor = 'grabbing';
+    }
 
-document.addEventListener('mouseup', () => {
-    isDragging = false;
-    okno.style.cursor = 'grab';
+    onMouseMove(e) {
+        if (!this.isDragging) return;
 
-    console.log(okno.style.left);
+        let newLeft = e.clientX - this.offsetX;
+        let newTop = e.clientY - this.offsetY;
+
+        const viewportLeft = window.scrollX;
+        const viewportTop = window.scrollY;
+        const viewportRight = window.scrollX + window.innerWidth;
+        const viewportBottom = window.scrollY + window.innerHeight;
+
+        const elWidth = this.el.offsetWidth;
+        const elHeight = this.el.offsetHeight;
+
+        if (newLeft < viewportLeft) newLeft = viewportLeft;
+        if (newLeft + elWidth > viewportRight) newLeft = viewportRight - elWidth;
+        if (newTop < viewportTop) newTop = viewportTop;
+        if (newTop + elHeight > viewportBottom) newTop = viewportBottom - elHeight;
+
+        this.el.style.left = newLeft + 'px';
+        this.el.style.top = newTop + 'px';
+    }
+
+    onMouseUp() {
+        if (!this.isDragging) return;
+        this.isDragging = false;
+        this.el.style.cursor = 'grab';
+        console.log(`Координати вікна: left=${this.el.style.left}, top=${this.el.style.top}`);
+    }
+
+    destroy() {
+        this.el.removeEventListener('mousedown', this.onMouseDown);
+        document.removeEventListener('mousemove', this.onMouseMove);
+        document.removeEventListener('mouseup', this.onMouseUp);
+    }
+}
+
+function initWin(selector) {
+    let allWindows = document.querySelectorAll(selector);
+    let draggableInstances = [];
+
+    console.log(allWindows);
     
-    okno.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        offsetX = e.clientX - okno.offsetLeft;
-        offsetY = e.clientY - okno.offsetTop;
-        okno.style.cursor = 'grabbing';
+
+    allWindows.forEach(el => {
+        console.log(el);
+        let instance = new DraggableWindow(el);
+        draggableInstances.push(instance);
     });
-    
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging) {      
-            okno.style.left = (e.clientX - offsetX) + 'px';
-            okno.style.top = (e.clientY - offsetY) + 'px';
-        }
-    });
+}
 
-    if(parseInt(okno.style.left) < leftEdge) okno.style.left = leftEdge + 'px';
-    if((parseInt(okno.style.left)+okno.offsetWidth) > rightEdge) okno.style.left = (rightEdge-okno.offsetWidth) + 'px';
-    if(parseInt(okno.style.top) < topEdge) okno.style.top = topEdge + 'px';
-    if(parseInt(okno.style.top) > (bottomEdge-200)) okno.style.top = (bottomEdge-okno.offsetHeight-40) + 'px';
-    console.log("Координати вікна:", okno.style.left, okno.style.top);
-});
-
-
-
-
-console.log("Край зверху:", topEdge);
-console.log("Край знизу:", bottomEdge);
-console.log("Край зліва:", leftEdge);
-console.log("Край справа:", rightEdge);
+initWin('.draggable-window');
