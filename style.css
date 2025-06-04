@@ -28,6 +28,11 @@
     width: 20px;
     border-radius: 100%;
     cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px;
 }
 
 .close {

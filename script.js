@@ -3,11 +3,57 @@ const maxTop_pos = window.scrollY;
 const maxRight_pos = window.scrollX + window.innerWidth;
 const maxBottom_pos = window.scrollY + window.innerHeight;
 
-let zIndex_count = 200;
+const tst = {
+    name: "Window tst",
+    position: {
+        left: 200,
+        top: 400,
+    },
+    size: {
+        width: 400,
+        height: 300
+    },
+    content: "Hello world",
+    color: ""
+}
 
-class DraggableWindow {
-    constructor(element) {
-        this.el = element;
+let zIndex_count = 100;
+
+class DWindow {
+    constructor(data_set) {
+        this.data = data_set;
+
+        this.el = document.createElement('div');
+
+        let color = this.data.color || '#f0f0f0';
+        let name = this.data.name || 'Base';
+        let size = this.data.size || { width: 200, height: 200 };
+        let position = this.data.position || { 
+            left: ((maxRight_pos - size.width) / 2), 
+            top: ((maxBottom_pos - size.height) / 2) - 60 
+        };
+
+        this.el.classList.add('draggable-window');
+        this.el.style.width = size.width + 'px';
+        this.el.style.height = size.height + 'px';
+        this.el.style.left = position.left + 'px';
+        this.el.style.top = position.top + 'px';
+        this.el.style.background = color;
+        this.el.style.position = 'absolute';
+        this.el.style.cursor = 'grab';
+        this.el.innerHTML = `
+        <div class="win-blocks">
+            <div class="win-name">${name}</div>
+            <div class="win-btns">
+                <div class="btn minimize"></div>
+                <div class="btn maximase"></div>
+                <div class="btn close"></div>
+            </div>
+        </div>
+        <div class="content">${this.data.content}</div>
+        `;
+
+        document.body.appendChild(this.el);
 
         this.isDragging = false;
         this.offsetX = 0;
@@ -112,53 +158,5 @@ class DraggableWindow {
     }
 }
 
-function initWin(selector) {
-    let allWindows = document.querySelectorAll(selector);
-    let draggableInstances = [];
 
-    console.log(allWindows);
-
-
-    allWindows.forEach(el => {
-        console.log(el);
-        let instance = new DraggableWindow(el);
-        draggableInstances.push(instance);
-    });
-}
-
-function createWin(
-                    name = 'Base',
-                    content = '',
-                    size = { width: 200, height: 200 },
-                    position = { 
-                        left: ((maxRight_pos - size.width)/2),
-                        top: (((maxBottom_pos - size.height)/2)-60) 
-                    }) {
-
-    const newWindow = document.createElement('div');
-
-    newWindow.classList.add('draggable-window');
-    newWindow.style.width = size.width + 'px';
-    newWindow.style.height = size.height + 'px';
-    newWindow.style.left = position.left + 'px';
-    newWindow.style.top = position.top + 'px';
-    newWindow.style.background = '#ffffff';
-    newWindow.style.position = 'absolute';
-    newWindow.style.cursor = 'grab';
-    newWindow.innerHTML = `
-        <div class="win-blocks">
-            <div class="win-name">${name}</div>
-            <div class="win-btns">
-                <div class="btn minimize"></div>
-                <div class="btn maximase"></div>
-                <div class="btn close">${content}</div>
-            </div>
-        </div>
-        <div class="content"></div>
-    `;
-    document.body.appendChild(newWindow);
-
-    initWin('.draggable-window');
-}
-
-createWin();
+let tstWindow = new DWindow(tst);
