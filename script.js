@@ -3,17 +3,17 @@ const maxTop_pos = window.scrollY;
 const maxRight_pos = window.scrollX + window.innerWidth;
 const maxBottom_pos = window.scrollY + window.innerHeight;
 
-const tst = {
-    name: "Window tst",
+const DEFAULT = {
+    name: "Window name",
     position: {
-        left: 200,
-        top: 400,
+        left: ((maxRight_pos - 200) / 2),
+        top: ((maxBottom_pos - 100) / 2) - 60
     },
     size: {
-        width: 400,
-        height: 300
+        width: 200,
+        height: 100
     },
-    content: "Hello world",
+    content: "",
     color: ""
 }
 
@@ -23,27 +23,25 @@ class DWindow {
     constructor(data_set) {
         this.data = data_set;
 
-        this.el = document.createElement('div');
+        if (this.data == undefined) {
+            this.data = DEFAULT;
+            console.warn("It is undefiened.");
+        }
 
-        let color = this.data.color || '#f0f0f0';
-        let name = this.data.name || 'Base';
-        let size = this.data.size || { width: 200, height: 200 };
-        let position = this.data.position || { 
-            left: ((maxRight_pos - size.width) / 2), 
-            top: ((maxBottom_pos - size.height) / 2) - 60 
-        };
+        this.el = document.createElement('div');
+        console.log(this.data);
 
         this.el.classList.add('draggable-window');
-        this.el.style.width = size.width + 'px';
-        this.el.style.height = size.height + 'px';
-        this.el.style.left = position.left + 'px';
-        this.el.style.top = position.top + 'px';
-        this.el.style.background = color;
+        this.el.style.width = this.data.size.width + 'px';
+        this.el.style.height = this.data.size.height + 'px';
+        this.el.style.left = this.data.position.left + 'px';
+        this.el.style.top = this.data.position.top + 'px';
+        this.el.style.background = this.data.color;
         this.el.style.position = 'absolute';
         this.el.style.cursor = 'grab';
         this.el.innerHTML = `
         <div class="win-blocks">
-            <div class="win-name">${name}</div>
+            <div class="win-name">${this.data.name}</div>
             <div class="win-btns">
                 <div class="btn minimize"></div>
                 <div class="btn maximase"></div>
@@ -52,6 +50,10 @@ class DWindow {
         </div>
         <div class="content">${this.data.content}</div>
         `;
+
+        zIndex_count++;
+        this.el.style.zIndex = zIndex_count;
+        console.log("Z-index:" + zIndex_count);
 
         document.body.appendChild(this.el);
 
@@ -63,6 +65,7 @@ class DWindow {
         this.onMouseMove = this.onMouseMove.bind(this);
         this.onMouseUp = this.onMouseUp.bind(this);
         this.onCloseClick = this.onCloseClick.bind(this);
+        this.onHideClick = this.onHideClick.bind(this);
         this.onMaximaseClick = this.onMaximaseClick.bind(this);
 
 
@@ -77,6 +80,9 @@ class DWindow {
 
         this.resisebtn = this.el.querySelector('.maximase');
         this.resisebtn.addEventListener('click', this.onMaximaseClick);
+
+        this.minimize = this.el.querySelector('.minimize');
+        this.minimize.addEventListener('click', this.onHideClick);
     }
 
     onMouseDown(e) {
@@ -124,7 +130,7 @@ class DWindow {
 
     onMaximaseClick() {
         console.log("Maximase clicked");
-        
+
         this.el.style.width = '100%';
         this.el.style.height = '100%';
         this.el.style.left = 0 + 'px';
@@ -136,19 +142,27 @@ class DWindow {
 
     onMinimaseClick() {
         console.log("Minimase clicked");
-        
-        this.el.style.width = 200 + 'px';
-        this.el.style.height = 200 + 'px';
-        this.el.style.left = (maxRight_pos - this.el.offsetWidth)/2 + 'px';
-        this.el.style.top = ((maxBottom_pos - this.el.offsetHeight)/2)-60 + 'px';
+
+        this.el.style.width = this.data.size.width + 'px';
+        this.el.style.height = this.data.size.height + 'px';
+        this.el.style.left = (maxRight_pos - this.el.offsetWidth) / 2 + 'px';
+        this.el.style.top = ((maxBottom_pos - this.el.offsetHeight) / 2) - 60 + 'px';
 
         this.resisebtn.removeEventListener('click', this.onMaximaseClick);
         this.resisebtn.addEventListener('click', this.onMaximaseClick.bind(this));
     }
 
+    onHideClick(){
+        this.el.style.display = 'none';
+    }
+
+    onShowClick(){
+        this.el.style.display = '';
+    }
+
     destroy() {
         console.log('Destroying window:', this.el);
-        
+
         this.el.removeEventListener('mousedown', this.onMouseDown);
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('mouseup', this.onMouseUp);
@@ -158,5 +172,4 @@ class DWindow {
     }
 }
 
-
-let tstWindow = new DWindow(tst);
+let tstWindow = new DWindow();
