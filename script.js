@@ -18,6 +18,7 @@ const DEFAULT = {
 }
 
 let zIndex_count = 100;
+let massive_all_windows = [];
 
 class DWindow {
     constructor(data_set) {
@@ -109,6 +110,9 @@ class DWindow {
 
         this.minimize = this.el.querySelector('.minimize');
         this.minimize.addEventListener('click', this.onHideClick);
+
+        massive_all_windows.push(this);
+        this.win_index = massive_all_windows.indexOf(this);
     }
 
     onMouseDown(e) {
@@ -157,8 +161,7 @@ class DWindow {
         console.log(`Коорди: left=${this.data.position.left}, top=${this.data.position.top}`);
     }
 
-    onCloseClick(e) {
-        e.preventDefault();
+    onCloseClick() {
         this.destroy();
     }
 
@@ -210,7 +213,7 @@ class DWindow {
     }
 
     destroy() {
-        console.log('Destroying window:', this.el);
+        console.log('Destroying window:', this.el, this.win_index);
 
         this.el.removeEventListener('mousedown', this.onMouseDown);
         this.el.removeEventListener('mousedown', this.onMouseClick);
@@ -226,9 +229,63 @@ class DWindow {
 
         this.closeBtn.removeEventListener('click', this.onCloseClick);
         this.el.parentNode.removeChild(this.el);
+
+        if (this.win_index !== -1) massive_all_windows.splice(this.win_index, 1);
     }
 }
 
-let tstWindow = new DWindow();
-let masive = [];
-masive.push(tstWindow);
+class ControlePanel {
+    constructor(data_set) {
+        this.data = data_set;
+        if (this.data == undefined) this.data = {};
+
+        this.el = document.createElement('div');
+        this.el.classList.add('control_panel');
+        this.el.innerHTML = `
+            <div class="elements">
+                <div class="icon user_acc"></div>
+                <hr>
+                <div class="programs"></div>
+                <hr>
+                <div class="icon more_programs"></div>
+            </div>
+            <div class="show_panel"></div>
+        `;
+
+        document.body.appendChild(this.el);
+
+        this.el.style.position = 'absolute';
+        this.el.style.transition = 'left 2s';
+        this.el.style.left = 0;
+        this.el.style.height = '300px';
+        this.el.style.top = (maxBottom_pos/2) - (this.el.offsetHeight/2) + 'px';
+
+        if(this.data.program_list == undefined) {
+            for(let i = 0; i<6; ++i) {
+                let pr_ico = document.createElement('div');
+                pr_ico.classList.add('icon');
+                this.el.querySelector('.programs').appendChild(pr_ico);
+            }
+        }
+
+        this.onHidePanel = this.onHidePanel.bind(this);
+        this.onShowClick = this.onShowClick.bind(this);
+
+        this.showpanel = this.el.querySelector('.show_panel');
+        this.showpanel.classList.remove('show_panel');
+        this.showpanel.addEventListener('click', this.onShowClick);
+    }
+
+    onHidePanel(){
+        this.newPos = this.el.offsetWidth - this.showpanel.offsetWidth;
+        this.el.style.left = - this.newPos + 'px';
+        this.showpanel.classList.add('show_panel');
+    }
+
+    onShowClick(){
+        this.el.style.left = 0;
+        this.showpanel.classList.remove('show_panel');
+    }
+}
+
+let panel = new ControlePanel();
