@@ -113,6 +113,10 @@ class DWindow {
 
         massive_all_windows.push(this);
         this.win_index = massive_all_windows.indexOf(this);
+
+        this.appList = document.querySelector('.programs');
+        this.appIcon = document.createElement('div');
+        this.appIcon.classList.add('icon');
     }
 
     onMouseDown(e) {
@@ -199,21 +203,27 @@ class DWindow {
 
         console.log(this.data.position.top);
 
-
         this.resisebtn.removeEventListener('click', this.onMaximaseClick);
         this.resisebtn.addEventListener('click', this.onMaximaseClick.bind(this));
     }
 
     onHideClick() {
         this.el.style.display = 'none';
+        this.appList.appendChild(this.appIcon);
+        this.onShowClick = this.onShowClick.bind(this);
+        this.appIcon.addEventListener('click', this.onShowClick);
     }
 
     onShowClick() {
         this.el.style.display = '';
+        this.appIcon.removeEventListener('click', this.onShowClick);
+        this.appList.removeChild(this.appIcon);
     }
 
     destroy() {
         console.log('Destroying window:', this.el, this.win_index);
+
+        this.appIcon.remove();
 
         this.el.removeEventListener('mousedown', this.onMouseDown);
         this.el.removeEventListener('mousedown', this.onMouseClick);
@@ -260,31 +270,32 @@ class ControlePanel {
         this.el.style.height = '320px';
         this.el.style.top = (maxBottom_pos / 2) - (this.el.offsetHeight / 2) + 'px';
 
-        if (this.data.program_list == undefined) {
-            for (let i = 0; i < 6; ++i) {
-                let pr_ico = document.createElement('div');
-
-                pr_ico.classList.add('icon', `program-${i}`);
-                pr_ico.dataset.programId = i; // для идентификации
-                pr_ico.title = "Программа " + (i + 1); // для наведения
-
-                pr_ico.addEventListener('click', () => {
-                    this.launchProgram(i);
-                });
-
-                this.el.querySelector('.programs').appendChild(pr_ico);
-            }
-        }
-
         this.onHidePanel = this.onHidePanel.bind(this);
         this.onShowClick = this.onShowClick.bind(this);
 
         this.showpanel = this.el.querySelector('.show_panel');
         this.showpanel.classList.remove('show_panel');
         this.showpanel.addEventListener('click', this.onShowClick);
+
+        this.isCursorOver = false;
+        this.el.addEventListener('mouseover', this.setCursorOver.bind(this, true));
+        this.el.addEventListener('mouseout', this.setCursorOver.bind(this, false));
+
+        this.time = 4000;
     }
 
+    setCursorOver(v) {
+        this.isCursorOver = v;
+        if (!v) {
+            setTimeout(() => {
+                this.onHidePanel();
+            }, this.time);
+        }
+    }
+
+
     onHidePanel() {
+        if (this.isCursorOver) return;
         this.newPos = this.el.offsetWidth - this.showpanel.offsetWidth;
         this.el.style.left = - this.newPos + 'px';
         this.showpanel.classList.add('show_panel');
@@ -293,11 +304,18 @@ class ControlePanel {
     onShowClick() {
         this.el.style.left = 0;
         this.showpanel.classList.remove('show_panel');
+
+        if (!this.isCursorOver) {
+            setTimeout(() => {
+                this.onHidePanel()
+            }, this.time);
+        }
     }
 
     launchProgram(id) {
         const windowConfigs = [
-            { name: "Notepad", content: `
+            {
+                name: "Notepad", content: `
                 <div class="nav_note_bar">
                     <div class="note_bar_els create">Create</div>
                     <div class="note_bar_els open">Open</div>
@@ -305,7 +323,8 @@ class ControlePanel {
                 </div>
                 <hr class="hr_note">
                 <textarea name="note" id=""></textarea>`,
-                color: "#fff" },
+                color: "#fff"
+            },
             { name: "Калькулятор", content: "<div>Здесь будет калькулятор</div>", color: "#e0f7fa" },
             { name: "Почта", content: "<div>Письма отсутствуют</div>", color: "#fce4ec" },
             { name: "Браузер", content: "<div>Введите URL...</div>", color: "#e8eaf6" },
@@ -325,3 +344,6 @@ class ControlePanel {
 }
 
 let panel = new ControlePanel();
+let windowD = new DWindow();
+
+panel.onShowClick();
