@@ -257,13 +257,21 @@ class ControlePanel {
         this.el.style.position = 'absolute';
         this.el.style.transition = 'left 2s';
         this.el.style.left = 0;
-        this.el.style.height = '300px';
-        this.el.style.top = (maxBottom_pos/2) - (this.el.offsetHeight/2) + 'px';
+        this.el.style.height = '320px';
+        this.el.style.top = (maxBottom_pos / 2) - (this.el.offsetHeight / 2) + 'px';
 
-        if(this.data.program_list == undefined) {
-            for(let i = 0; i<6; ++i) {
+        if (this.data.program_list == undefined) {
+            for (let i = 0; i < 6; ++i) {
                 let pr_ico = document.createElement('div');
-                pr_ico.classList.add('icon');
+
+                pr_ico.classList.add('icon', `program-${i}`);
+                pr_ico.dataset.programId = i; // для идентификации
+                pr_ico.title = "Программа " + (i + 1); // для наведения
+
+                pr_ico.addEventListener('click', () => {
+                    this.launchProgram(i);
+                });
+
                 this.el.querySelector('.programs').appendChild(pr_ico);
             }
         }
@@ -276,16 +284,44 @@ class ControlePanel {
         this.showpanel.addEventListener('click', this.onShowClick);
     }
 
-    onHidePanel(){
+    onHidePanel() {
         this.newPos = this.el.offsetWidth - this.showpanel.offsetWidth;
         this.el.style.left = - this.newPos + 'px';
         this.showpanel.classList.add('show_panel');
     }
 
-    onShowClick(){
+    onShowClick() {
         this.el.style.left = 0;
         this.showpanel.classList.remove('show_panel');
     }
+
+    launchProgram(id) {
+        const windowConfigs = [
+            { name: "Notepad", content: `
+                <div class="nav_note_bar">
+                    <div class="note_bar_els create">Create</div>
+                    <div class="note_bar_els open">Open</div>
+                    <div class="note_bar_els save">Save</div>
+                </div>
+                <hr class="hr_note">
+                <textarea name="note" id=""></textarea>`,
+                color: "#fff" },
+            { name: "Калькулятор", content: "<div>Здесь будет калькулятор</div>", color: "#e0f7fa" },
+            { name: "Почта", content: "<div>Письма отсутствуют</div>", color: "#fce4ec" },
+            { name: "Браузер", content: "<div>Введите URL...</div>", color: "#e8eaf6" },
+            { name: "Проводник", content: "<div>Файлы</div>", color: "#f3e5f5" },
+            { name: "Настройки", content: "<div>Параметры системы</div>", color: "#f0f4c3" }
+        ];
+
+        const config = windowConfigs[id] || { name: "Окно", content: "Пусто", color: "#ffffff" };
+
+        new DWindow({
+            name: config.name,
+            content: config.content,
+            color: config.color
+        });
+    }
+
 }
 
 let panel = new ControlePanel();
