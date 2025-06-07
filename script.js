@@ -17,6 +17,90 @@ const DEFAULT = {
     color: ""
 }
 
+const DB = () => {
+    const dbName = "myOS";
+    const storeName = "files";
+
+    let database;
+
+    const open = () => new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, 1);
+
+        request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(storeName)) {
+                db.createObjectStore(storeName, { keyPath: "path" });
+            }
+        };
+
+        request.onsuccess = () => {
+            database = request.result;
+            resolve(database);
+        };
+
+        request.onerror = () => reject("DB open error");
+    });
+
+    const getStore = (mode = "readonly") => {
+        const tx = database.transaction(storeName, mode);
+        return tx.objectStore(storeName);
+    };
+
+    const save = async (file) => {
+        await open();
+        return new Promise((resolve, reject) => {
+            const store = getStore("readwrite");
+            const request = store.put(file);
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject("Save error");
+        });
+    };
+
+    const load = async (path) => {
+        await open();
+        return new Promise((resolve, reject) => {
+            const store = getStore("readonly");
+            const request = store.get(path);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject("Load error");
+        });
+    };
+
+    const remove = async (path) => {
+        await open();
+        return new Promise((resolve, reject) => {
+            const store = getStore("readwrite");
+            const request = store.delete(path);
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject("Delete error");
+        });
+    };
+
+    const list = async () => {
+        await open();
+        return new Promise((resolve, reject) => {
+            const store = getStore("readonly");
+            const request = store.getAll();
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject("List error");
+        });
+    };
+
+    const exists = async (path) => {
+        await open();
+        return new Promise((resolve, reject) => {
+            const store = getStore("readonly");
+            const request = store.getKey(path);
+            request.onsuccess = () => resolve(request.result !== undefined);
+            request.onerror = () => reject("Exists error");
+        });
+    };
+
+    return { save, load, remove, list, exists };
+};
+
+const FILE_SYS = DB();
+
 let zIndex_count = 100;
 let massive_all_windows = [];
 
@@ -49,17 +133,16 @@ class DWindow {
 
         this.el.style.background = this.data.color;
 
-
         this.el.innerHTML = `
-        <div class="win-blocks">
-            <div class="win-name">${this.data.name}</div>
-            <div class="win-btns">
-                <div class="btn minimize"></div>
-                <div class="btn maximase"></div>
-                <div class="btn close"></div>
+            <div class="win-blocks">
+                <div class="win-name">${this.data.name}</div>
+                <div class="win-btns">
+                    <div class="btn minimize"></div>
+                    <div class="btn maximase"></div>
+                    <div class="btn close"></div>
+                </div>
             </div>
-        </div>
-        <div class="content">${this.data.content}</div>
+            <div class="content">${this.data.content}</div>
         `;
 
         this.windowHeader = this.el.querySelector('.win-blocks');
@@ -223,7 +306,7 @@ class DWindow {
     destroy() {
         console.log('Destroying window:', this.el, this.win_index);
 
-        this.appIcon.remove();
+        if (this.appIcon != undefined) this.appIcon.remove();
 
         this.el.removeEventListener('mousedown', this.onMouseDown);
         this.el.removeEventListener('mousedown', this.onMouseClick);
@@ -343,7 +426,58 @@ class ControlePanel {
 
 }
 
+class Notepad_program {
+    constructor() {
+        this.data = {
+            name: "Notepad", content: `
+                <div class="nav_note_bar">
+                    <div class="note_bar_els create">Create</div>
+                    <div class="note_bar_els open">Open</div>
+                    <div class="note_bar_els save">Save</div>
+                </div>
+                <hr class="hr_note">
+                <textarea name="note" id=""></textarea>`,
+            color: "#fff"
+        };
+
+        this.window = new DWindow(this.data);
+        this.controllbtns = {};
+
+        this.controllbtns.create = this.window.el.querySelector('.create');
+        this.controllbtns.open = this.window.el.querySelector('.open');
+        this.controllbtns.save = this.window.el.querySelector('.save');
+
+        this.onCreateFile = this.onCreateFile.bind(this);
+        this.onOpenFile = this.onOpenFile.bind(this);
+        this.onSaveFile = this.onSaveFile.bind(this);
+
+        this.controllbtns.open.addEventListener('click', this.onOpenFile);
+        this.controllbtns.save.addEventListener('click', this.onSaveFile);
+        this.controllbtns.create.addEventListener('click', this.onCreateFile);
+    }
+
+    onCreateFile() {
+        console.log("%cCreate file clicked", "color: green; font-weight: bold; font-size: 20px;");
+
+    }
+
+    onOpenFile() {
+        console.log("%cOpen file clicked", "color: green; font-weight: bold; font-size: 20px;");
+
+    }
+
+    async onSaveFile() {
+        console.log("%cSave file clicked", "color: green; font-weight: bold; font-size: 20px;");
+
+        await FILE_SYS.save({
+            path: "/Desktop/file.txt",
+            type: "text",
+            content: "Привет, мир!"
+        });
+    }
+}
+
 let panel = new ControlePanel();
 let windowD = new DWindow();
 
-panel.onShowClick();
+panel.onHidePanel();
