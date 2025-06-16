@@ -151,6 +151,7 @@ class DWindow {
         this.el.style.zIndex = zIndex_count;
         console.log("Z-index:" + zIndex_count);
 
+        this.el.classList.add("fade-on");
         document.body.appendChild(this.el);
 
         this.el.style.position = 'absolute';
@@ -291,13 +292,16 @@ class DWindow {
     }
 
     onHideClick() {
-        this.el.style.display = 'none';
+        this.el.classList.remove("fade-on");
+        this.el.classList.add("fade-out");
         this.appList.appendChild(this.appIcon);
         this.onShowClick = this.onShowClick.bind(this);
         this.appIcon.addEventListener('click', this.onShowClick);
     }
 
     onShowClick() {
+        this.el.classList.remove("fade-out");
+        this.el.classList.add("fade-on");
         this.el.style.display = '';
         this.appIcon.removeEventListener('click', this.onShowClick);
         this.appList.removeChild(this.appIcon);
@@ -306,24 +310,29 @@ class DWindow {
     destroy() {
         console.log('Destroying window:', this.el, this.win_index);
 
-        if (this.appIcon != undefined) this.appIcon.remove();
+        this.el.classList.add("fade-out");
 
-        this.el.removeEventListener('mousedown', this.onMouseDown);
-        this.el.removeEventListener('mousedown', this.onMouseClick);
+        setTimeout(() => {
+            if (this.appIcon != undefined) this.appIcon.remove();
 
-        this.minimize.removeEventListener('click', this.onHideClick);
-        this.resisebtn.removeEventListener('click', this.onMaximaseClick);
-        this.closeBtn.removeEventListener('click', this.onCloseClick);
+            this.el.removeEventListener('mousedown', this.onMouseDown);
+            this.el.removeEventListener('mousedown', this.onMouseClick);
 
-        this.windowHeader.removeEventListener('mousedown', this.onMouseDown);
+            this.minimize.removeEventListener('click', this.onHideClick);
+            this.resisebtn.removeEventListener('click', this.onMaximaseClick);
+            this.closeBtn.removeEventListener('click', this.onCloseClick);
 
-        document.removeEventListener('mousemove', this.onMouseMove);
-        document.removeEventListener('mouseup', this.onMouseUp);
+            this.windowHeader.removeEventListener('mousedown', this.onMouseDown);
 
-        this.closeBtn.removeEventListener('click', this.onCloseClick);
-        this.el.parentNode.removeChild(this.el);
+            document.removeEventListener('mousemove', this.onMouseMove);
+            document.removeEventListener('mouseup', this.onMouseUp);
 
-        if (this.win_index !== -1) massive_all_windows.splice(this.win_index, 1);
+            this.closeBtn.removeEventListener('click', this.onCloseClick);
+
+            this.el.parentNode.removeChild(this.el);
+
+            if (this.win_index !== -1) massive_all_windows.splice(this.win_index, 1);
+        }, 500);
     }
 }
 
