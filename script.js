@@ -357,7 +357,7 @@ class ControlePanel {
         document.body.appendChild(this.el);
 
         this.el.style.position = 'absolute';
-        this.el.style.transition = 'left 2s';
+        this.el.style.transition = 'left 0.5s';
         this.el.style.left = 0;
         this.el.style.height = '320px';
         this.el.style.top = (maxBottom_pos / 2) - (this.el.offsetHeight / 2) + 'px';
@@ -378,13 +378,10 @@ class ControlePanel {
 
     setCursorOver(v) {
         this.isCursorOver = v;
-        if (!v) {
-            setTimeout(() => {
-                this.onHidePanel();
-            }, this.time);
-        }
+        if (!v) setTimeout(() => {
+            this.onHidePanel();
+        }, this.time);
     }
-
 
     onHidePanel() {
         if (this.isCursorOver) return;
@@ -403,42 +400,13 @@ class ControlePanel {
             }, this.time);
         }
     }
-
-    launchProgram(id) {
-        const windowConfigs = [
-            {
-                name: "Notepad", content: `
-                <div class="nav_note_bar">
-                    <div class="note_bar_els create">Create</div>
-                    <div class="note_bar_els open">Open</div>
-                    <div class="note_bar_els save">Save</div>
-                </div>
-                <hr class="hr_note">
-                <textarea name="note" id=""></textarea>`,
-                color: "#fff"
-            },
-            { name: "Калькулятор", content: "<div>Здесь будет калькулятор</div>", color: "#e0f7fa" },
-            { name: "Почта", content: "<div>Письма отсутствуют</div>", color: "#fce4ec" },
-            { name: "Браузер", content: "<div>Введите URL...</div>", color: "#e8eaf6" },
-            { name: "Проводник", content: "<div>Файлы</div>", color: "#f3e5f5" },
-            { name: "Настройки", content: "<div>Параметры системы</div>", color: "#f0f4c3" }
-        ];
-
-        const config = windowConfigs[id] || { name: "Окно", content: "Пусто", color: "#ffffff" };
-
-        new DWindow({
-            name: config.name,
-            content: config.content,
-            color: config.color
-        });
-    }
-
 }
 
 class Notepad_program {
     constructor() {
         this.data = {
-            name: "Notepad", content: `
+            name: "Notepad",
+            content: `
                 <div class="nav_note_bar">
                     <div class="note_bar_els create">Create</div>
                     <div class="note_bar_els open">Open</div>
@@ -483,6 +451,9 @@ class Notepad_program {
             type: "text",
             content: "Привет, мир!"
         });
+
+        const file = await FILE_SYS.load("/Desktop/file.txt");
+        console.log(file);
     }
 }
 
